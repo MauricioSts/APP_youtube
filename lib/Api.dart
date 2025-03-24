@@ -4,38 +4,46 @@ import 'dart:convert';
 
 const CHAVE_YOUTUBE_API = "AIzaSyDLPkI16FU8FrC5_SOQldS30Nvof2B5-eU";
 const ID_CANAL = "UCVHFbqXqoYvEWM1Ddxl0QDg";
-const URL_BASE = "www.googleapis.com";
+const URL_BASE = "www.googleapis.com"; // Mudei a URL para completa em URI.https
 
 class Api {
-  pesquisar(String pesquisa) async {
-    final uri = Uri.https(URL_BASE, "/youtube/v3/search", {
-      "part": "snippet",
-      "type": "video",
-      "maxResults": "20",
-      "order": "date",
-      "key": CHAVE_YOUTUBE_API,
-      "channelId": ID_CANAL,
-      "q": pesquisa,
-    });
+  Future<List<Video>> pesquisar(String pesquisa) async {
+    try {
+      final uri = Uri.https(URL_BASE, "/youtube/v3/search", {
+        "part": "snippet", // Especifica as informações que queremos da API
+        "type": "video",
+        "maxResults": "20",
+        "order": "date",
+        "key": CHAVE_YOUTUBE_API,
 
-    http.Response response = await http.get(uri);
+        "q": pesquisa,
+      });
 
-    Map<String, dynamic> dadosJson = json.decode(response.body);
+      http.Response response = await http.get(uri); // Realiza a requisição
 
-    List<Video> videos =
-        dadosJson["items"].map<Video>((map) {
-          return Video.fromJson(map);
-          //return Video.converterJson(map);
-        }).toList();
+      if (response.statusCode == 200) {
+        Map<String, dynamic> dadosJson = json.decode(
+          response.body,
+        ); // Converte a resposta da API em JSON
 
-    for (var video in videos) {
-      print("resultado " + video.titulo);
+        // Cria a lista de objetos Video a partir dos dados retornados pela API
+        List<Video> videos =
+            (dadosJson["items"] as List).map<Video>((map) {
+              return Video.fromJson(
+                map,
+              ); // Converte cada item em um objeto Video
+            }).toList();
+
+        return videos;
+      } else {
+        // Caso a resposta não seja 200 OK, retorna uma lista vazia
+        print("Erro na requisição. Código: ${response.statusCode}");
+        return [];
+      }
+    } catch (e) {
+      // Caso ocorra algum erro (ex: falha de rede), retorna uma lista vazia
+      print("Erro ao fazer a requisição: $e");
+      return [];
     }
-
-    /*for (var video in dadosJson["items"]) {
-      print("resultado" + video.toString());
-    }*/
-
-    //print("resultado: " + dadosJson["items"].toString());
   }
 }
