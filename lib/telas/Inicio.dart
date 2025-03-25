@@ -1,58 +1,49 @@
 import 'package:app_youtube/Api.dart';
 import 'package:app_youtube/model/Video.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:flutter/material.dart';
 
 class Inicio extends StatefulWidget {
+  final String pesquisa;
+  Inicio(this.pesquisa);
+
   @override
   _InicioState createState() => _InicioState();
-
-  String pesquisa;
-  Inicio(this.pesquisa);
 }
 
 class _InicioState extends State<Inicio> {
   Future<List<Video>> _listarVideos(String pesquisa) async {
     Api api = Api();
-    return api.pesquisar(
-      pesquisa,
-    ); // Supondo que pesquisar retorne um Future<List<Video>>
+    return api.pesquisar(pesquisa);
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Video>>(
-      //ele constroi a interface com base no estado de um future, ele recebe 2 parametros
-      future: _listarVideos(
-        widget.pesquisa,
-      ), //o future é 1 parametro que sera aguardado
+      future: _listarVideos(widget.pesquisa),
       builder: (context, snapshot) {
-        //funcao que sera chamado toda vez que o future mudar
         switch (snapshot.connectionState) {
-          //indica o estado da requisicao
-          case ConnectionState.none: //nenhuma requesicao
-          case ConnectionState.waiting: // a resposta ainda n chegou
+          case ConnectionState.none:
+          case ConnectionState.waiting:
             return Center(child: CircularProgressIndicator());
-          case ConnectionState
-              .active: //a requisicao esta ativa mas ainda n chegou
-          case ConnectionState.done: // a requisicao foi concluida
+          case ConnectionState.active:
+          case ConnectionState.done:
             if (snapshot.hasData) {
-              /// se tiver dados os videos sao extraidos
               List<Video> videos = snapshot.data!;
               return ListView.separated(
-                // é uma listview com separacao entre os itens
                 itemBuilder: (context, index) {
-                  Video video =
-                      videos[index]; //responsavel por pegar cada video com base no index
+                  Video video = videos[index];
                   return Column(
-                    children: <Widget>[
-                      Container(
-                        height: 200,
-                        decoration: BoxDecoration(
-                          image: DecorationImage(
-                            fit: BoxFit.cover,
-                            image: NetworkImage(video.imagem),
+                    children: [
+                      YoutubePlayer(
+                        controller: YoutubePlayerController(
+                          initialVideoId: video.id,
+                          flags: YoutubePlayerFlags(
+                            autoPlay: false,
+                            isLive: false,
                           ),
                         ),
+                        showVideoProgressIndicator: true,
                       ),
                       ListTile(
                         title: Text(video.titulo),
@@ -68,7 +59,6 @@ class _InicioState extends State<Inicio> {
             } else {
               return Center(child: Text("Nenhum dado a ser exibido!"));
             }
-            break;
         }
       },
     );
