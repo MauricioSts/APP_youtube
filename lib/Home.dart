@@ -14,10 +14,16 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int _indiceAtual = 0;
+  String _resultado = "";
 
   @override
   Widget build(BuildContext context) {
-    List<Widget> telas = [Inicio(), Emalta(), Inscricoes(), Biblioteca()];
+    List<Widget> telas = [
+      Inicio(_resultado),
+      Emalta(),
+      Inscricoes(),
+      Biblioteca(),
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -32,6 +38,9 @@ class _HomeState extends State<Home> {
                 delegate: CustomSearchDelegate(),
               );
               if (res != null) {
+                setState(() {
+                  _resultado = res;
+                });
                 print("resultado: $res");
               }
             },

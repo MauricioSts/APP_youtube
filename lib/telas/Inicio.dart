@@ -5,13 +5,16 @@ import 'package:flutter/material.dart';
 class Inicio extends StatefulWidget {
   @override
   _InicioState createState() => _InicioState();
+
+  String pesquisa;
+  Inicio(this.pesquisa);
 }
 
 class _InicioState extends State<Inicio> {
-  Future<List<Video>> _listarVideos() async {
+  Future<List<Video>> _listarVideos(String pesquisa) async {
     Api api = Api();
     return api.pesquisar(
-      "vinicius13",
+      pesquisa,
     ); // Supondo que pesquisar retorne um Future<List<Video>>
   }
 
@@ -19,7 +22,9 @@ class _InicioState extends State<Inicio> {
   Widget build(BuildContext context) {
     return FutureBuilder<List<Video>>(
       //ele constroi a interface com base no estado de um future, ele recebe 2 parametros
-      future: _listarVideos(), //o future é 1 parametro que sera aguardado
+      future: _listarVideos(
+        widget.pesquisa,
+      ), //o future é 1 parametro que sera aguardado
       builder: (context, snapshot) {
         //funcao que sera chamado toda vez que o future mudar
         switch (snapshot.connectionState) {
